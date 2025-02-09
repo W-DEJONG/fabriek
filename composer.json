@@ -1,0 +1,64 @@
+{
+    "name": "w-dejong/fabriek",
+    "description": "Experimental Package for auto discovering classes and building factories for them.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Wouter de Jong",
+            "email": "wj@dejo.dev"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^8.2",
+        "symfony/finder": "7.3.x-dev",
+        "illuminate/support": "*"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.14",
+        "larastan/larastan": "^2.9",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-arch": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0",
+        "phpstan/extension-installer": "^1.3",
+        "phpstan/phpstan-deprecation-rules": "^1.1",
+        "phpstan/phpstan-phpunit": "^1.3"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "DeJoDev\\Fabriek\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DeJoDev\\Fabriek\\Fixtures\\": "tests/fixtures"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+        ],
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ],
+        "lint": [
+            "@php vendor/bin/pint --ansi --test",
+            "@php vendor/bin/phpstan analyse --verbose --ansi"
+        ],
+        "fix": [
+            "@php vendor/bin/pint --ansi"
+        ],
+        "test": [
+            "@clear",
+            "@php vendor/bin/pest"
+        ]
+    }
+}

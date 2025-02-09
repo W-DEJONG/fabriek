@@ -1,10 +1,3 @@
-# fabriek
-Experimental Package for auto discovering classes and building factories for them.
-
-
-Usage
-```php
-
 <?php
 
 use DeJoDev\Fabriek\ClassFinder;
@@ -19,5 +12,3 @@ $finder = ClassFinder::create()
 foreach ($finder as $job) {
     $job->handle();
 }
-
-```
