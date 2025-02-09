@@ -53,8 +53,8 @@ it('Can filter classes with regex', function () {
     $finder = ClassFinder::create()
         ->in(__DIR__.'/fixtures', NAMESPACE_PREFIX)
         ->noMatch('Another');
-    $classes = iterator_to_array($finder);
-    expect($classes)
+
+    expect(iterator_to_array($finder))
         ->toHaveCount(1)
         ->toHaveKey(MyClass::class)
         ->not()->toHaveKey(AnotherClass::class);
