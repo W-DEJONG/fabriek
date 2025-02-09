@@ -133,3 +133,17 @@ it('Can return an array of classes', function () {
         ->toBeArray()
         ->toHaveKey(MyClass::class);
 });
+
+it('Can do actions on each class', function () {
+    ClassFinder::create()
+        ->in(__DIR__.'/fixtures', NAMESPACE_PREFIX)
+        ->withInterfaces(MyInterface::class)
+        ->instances()
+        ->do(function ($object, $class) {
+            expect($object)
+                ->toBeInstanceOf($class);
+            $object->foo();
+            expect($object->fooCalled())
+                ->toBeTrue();
+        });
+});

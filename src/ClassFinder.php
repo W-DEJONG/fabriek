@@ -216,4 +216,20 @@ final class ClassFinder implements Countable, IteratorAggregate
     {
         return iterator_to_array($this->getIterator());
     }
+
+    /**
+     * Executes a given action on each object
+     * retrieved from the iterator.
+     *
+     * @param  callable  $action  A callable with two parameters:
+     *                            - $object -> An instance of the class or a ReflectionClass
+     *                            - $className -> string with the fully qualified class name
+     *                            function(object $object, string $className)
+     */
+    public function do(callable $action): void
+    {
+        foreach ($this->getIterator() as $className => $object) {
+            $action($object, $className);
+        }
+    }
 }
