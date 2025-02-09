@@ -12,7 +12,7 @@ use Iterator;
 use IteratorAggregate;
 use Symfony\Component\Finder\Finder;
 
-class ClassFinder implements Countable, IteratorAggregate
+final class ClassFinder implements Countable, IteratorAggregate
 {
     private Finder $finder;
 
@@ -40,9 +40,9 @@ class ClassFinder implements Countable, IteratorAggregate
     /**
      * Create a new ClassFinder instance
      */
-    public static function create(): static
+    public static function create(): ClassFinder
     {
-        return new static;
+        return new ClassFinder;
     }
 
     /**
@@ -64,7 +64,7 @@ class ClassFinder implements Countable, IteratorAggregate
      * @param  string  $directory  The directory path.
      * @param  string  $namespace  The namespace associated with the directory.
      */
-    public function in(string $directory, string $namespace): static
+    public function in(string $directory, string $namespace): ClassFinder
     {
         $directory = str_ends_with($directory, '/') ? $directory : $directory.'/';
         $namespace = str_ends_with($namespace, '\\') ? $namespace : $namespace.'\\';
@@ -81,7 +81,7 @@ class ClassFinder implements Countable, IteratorAggregate
      *
      * @param  array|string  $patterns  One or more patterns to be matched.
      */
-    public function match(array|string $patterns): static
+    public function match(array|string $patterns): ClassFinder
     {
         $this->matchPatterns = array_merge($this->matchPatterns, (array) $patterns);
 
@@ -95,7 +95,7 @@ class ClassFinder implements Countable, IteratorAggregate
      *
      * @return $this
      */
-    public function noMatch(array|string $patterns): static
+    public function noMatch(array|string $patterns): ClassFinder
     {
         $this->noMatchPatterns = array_merge($this->noMatchPatterns, (array) $patterns);
 
@@ -107,7 +107,7 @@ class ClassFinder implements Countable, IteratorAggregate
      *
      * @param  bool  $accept  Boolean value indicating whether enums are accepted. Defaults to true.
      */
-    public function withEnums(bool $accept = true): static
+    public function withEnums(bool $accept = true): ClassFinder
     {
         $this->withEnums = $accept;
 
@@ -119,7 +119,7 @@ class ClassFinder implements Countable, IteratorAggregate
      *
      * @param  array|string  $classes  One or more classes to include.
      */
-    public function withParents(array|string $classes): static
+    public function withParents(array|string $classes): ClassFinder
     {
         $this->withParents = array_merge($this->withParents, (array) $classes);
 
@@ -131,7 +131,7 @@ class ClassFinder implements Countable, IteratorAggregate
      *
      * @return $this
      */
-    public function withTraits(array|string $traits): static
+    public function withTraits(array|string $traits): ClassFinder
     {
         $this->withTraits = array_merge($this->withTraits, (array) $traits);
 
@@ -143,14 +143,14 @@ class ClassFinder implements Countable, IteratorAggregate
      *
      * @return $this
      */
-    public function withInterfaces(array|string $interfaces): static
+    public function withInterfaces(array|string $interfaces): ClassFinder
     {
         $this->withInterfaces = array_merge($this->withInterfaces, (array) $interfaces);
 
         return $this;
     }
 
-    public function instances(bool $instantiate = true): static
+    public function instances(bool $instantiate = true): ClassFinder
     {
         $this->insances = $instantiate;
 
