@@ -1,6 +1,8 @@
-# fabriek
+# Fabriek
 Experimental Package for auto discovering classes and building factories for them.
 
+This package uses the [Symfony Finder](https://symfony.com/doc/current/components/finder.html) package to locate 
+classes and provides a fluent interface for selecting and filtering.
 
 Usage
 ```php
@@ -21,3 +23,5 @@ foreach ($finder as $job) {
 }
 
 ```
+
+2025 Wouter de Jong

@@ -32,7 +32,6 @@ class FilterClassesIterator extends MultiplePcreFilterIterator
     public function key(): string
     {
         return $this->current()->getName();
-        //        return $this->getClassName(parent::current());
     }
 
     public function accept(): bool
