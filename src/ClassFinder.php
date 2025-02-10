@@ -2,6 +2,7 @@
 
 namespace DeJoDev\Fabriek;
 
+use Closure;
 use Countable;
 use DeJoDev\Fabriek\Iterators\FilterClassesIterator;
 use DeJoDev\Fabriek\Iterators\FilterWithInterfacesIterator;
@@ -30,7 +31,7 @@ final class ClassFinder implements Countable, IteratorAggregate
 
     private array $withInterfaces = [];
 
-    private bool $instances = false;
+    private ?Closure $instances = null;
 
     public function __construct()
     {
@@ -117,7 +118,7 @@ final class ClassFinder implements Countable, IteratorAggregate
     /**
      * Only accept classes that extend of one of given classes.
      *
-     * @param  array|string $classes  One or more classes to include.
+     * @param  array|string  $classes  One or more classes to include.
      */
     public function withParents(array|string $classes): ClassFinder
     {
@@ -128,8 +129,6 @@ final class ClassFinder implements Countable, IteratorAggregate
 
     /**
      * Only accept classes that contain of one of given traits.
-     *
-     * @param array|string $traits
      */
     public function withTraits(array|string $traits): ClassFinder
     {
@@ -153,9 +152,9 @@ final class ClassFinder implements Countable, IteratorAggregate
     /**
      * Return instances instead of reflection objects
      */
-    public function instances(): ClassFinder
+    public function instances(?callable $factoryMethod = null): ClassFinder
     {
-        $this->instances = true;
+        $this->instances = is_null($factoryMethod) ? fn ($className) => new $className : $factoryMethod(...);
 
         return $this;
     }
@@ -186,7 +185,7 @@ final class ClassFinder implements Countable, IteratorAggregate
         }
 
         if ($this->instances) {
-            $iterator = new ReturnInstancesIterator($iterator);
+            $iterator = new ReturnInstancesIterator($iterator, $this->instances);
         }
 
         return $iterator;

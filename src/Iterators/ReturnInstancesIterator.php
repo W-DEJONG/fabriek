@@ -2,17 +2,19 @@
 
 namespace DeJoDev\Fabriek\Iterators;
 
+use Closure;
 use Iterator;
 
 readonly class ReturnInstancesIterator implements Iterator
 {
-    public function __construct(private Iterator $iterator) {}
+    public function __construct(private Iterator $iterator, private Closure $factoryMethod) {}
 
     public function current(): object
     {
         $classname = $this->iterator->key();
+        $factory = $this->factoryMethod;
 
-        return new $classname;
+        return $factory($classname);
     }
 
     public function next(): void
