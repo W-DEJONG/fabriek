@@ -152,11 +152,10 @@ final class ClassFinder implements Countable, IteratorAggregate
 
     /**
      * Return instances instead of reflection objects
-     * @param bool $instantiate
      */
-    public function instances(bool $instantiate = true): ClassFinder
+    public function instances(): ClassFinder
     {
-        $this->instances = $instantiate;
+        $this->instances = true;
 
         return $this;
     }
