@@ -30,7 +30,7 @@ final class ClassFinder implements Countable, IteratorAggregate
 
     private array $withInterfaces = [];
 
-    private bool $insances = false;
+    private bool $instances = false;
 
     public function __construct()
     {
@@ -117,7 +117,7 @@ final class ClassFinder implements Countable, IteratorAggregate
     /**
      * Only accept classes that extend of one of given classes.
      *
-     * @param  array|string  $classes  One or more classes to include.
+     * @param  array|string $classes  One or more classes to include.
      */
     public function withParents(array|string $classes): ClassFinder
     {
@@ -129,7 +129,7 @@ final class ClassFinder implements Countable, IteratorAggregate
     /**
      * Only accept classes that contain of one of given traits.
      *
-     * @return $this
+     * @param array|string $traits
      */
     public function withTraits(array|string $traits): ClassFinder
     {
@@ -150,9 +150,13 @@ final class ClassFinder implements Countable, IteratorAggregate
         return $this;
     }
 
+    /**
+     * Return instances instead of reflection objects
+     * @param bool $instantiate
+     */
     public function instances(bool $instantiate = true): ClassFinder
     {
-        $this->insances = $instantiate;
+        $this->instances = $instantiate;
 
         return $this;
     }
@@ -182,7 +186,7 @@ final class ClassFinder implements Countable, IteratorAggregate
             $iterator = new FilterWithInterfacesIterator($iterator, $this->withInterfaces);
         }
 
-        if ($this->insances) {
+        if ($this->instances) {
             $iterator = new ReturnInstancesIterator($iterator);
         }
 
