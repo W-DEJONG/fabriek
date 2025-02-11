@@ -8,6 +8,7 @@ use DeJoDev\Fabriek\Iterators\FilterClassesIterator;
 use DeJoDev\Fabriek\Iterators\FilterWithInterfacesIterator;
 use DeJoDev\Fabriek\Iterators\FilterWithParentsIterator;
 use DeJoDev\Fabriek\Iterators\FilterWithTraitsIterator;
+use DeJoDev\Fabriek\Iterators\ReturnClassNamesIterator;
 use DeJoDev\Fabriek\Iterators\ReturnInstancesIterator;
 use Iterator;
 use IteratorAggregate;
@@ -32,6 +33,8 @@ final class ClassFinder implements Countable, IteratorAggregate
     private array $withInterfaces = [];
 
     private ?Closure $instances = null;
+
+    private bool $reflect = false;
 
     public function __construct()
     {
@@ -150,11 +153,21 @@ final class ClassFinder implements Countable, IteratorAggregate
     }
 
     /**
-     * Return instances instead of reflection objects
+     * Return instances instead of classnames as values
      */
     public function instances(?callable $factoryMethod = null): ClassFinder
     {
         $this->instances = is_null($factoryMethod) ? fn ($className) => new $className : $factoryMethod(...);
+
+        return $this;
+    }
+
+    /**
+     * Return ReflectionClass objects instead of classnames as values
+     */
+    public function reflect(): ClassFinder
+    {
+        $this->reflect = true;
 
         return $this;
     }
@@ -186,6 +199,8 @@ final class ClassFinder implements Countable, IteratorAggregate
 
         if ($this->instances) {
             $iterator = new ReturnInstancesIterator($iterator, $this->instances);
+        } elseif (! $this->reflect) {
+            $iterator = new ReturnClassNamesIterator($iterator);
         }
 
         return $iterator;
@@ -196,7 +211,7 @@ final class ClassFinder implements Countable, IteratorAggregate
      */
     public function hasResults(): bool
     {
-        foreach ($this->getIterator() as $_) {
+        foreach ($this->getIterator() as $ignored) {
             return true;
         }
 
@@ -213,10 +228,13 @@ final class ClassFinder implements Countable, IteratorAggregate
 
     /**
      * Converts the object to an array
+     *
+     * @param  bool  $preserve_keys  [optional] Whether to use the iterator element keys as index.
+     *                               </p>
      */
-    public function toArray(): array
+    public function toArray(bool $preserve_keys = false): array
     {
-        return iterator_to_array($this->getIterator());
+        return iterator_to_array($this->getIterator(), $preserve_keys);
     }
 
     /**

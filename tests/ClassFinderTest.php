@@ -48,6 +48,7 @@ it('Can filter classes with regex', function () {
     expect(iterator_to_array($finder))
         ->toHaveCount(2)
         ->toHaveKey(ClassWithInterface::class)
+        ->toContain(ClassWithInterface::class)
         ->not()->toHaveKey(MyClass::class);
 
     $finder = ClassFinder::create()
@@ -57,6 +58,7 @@ it('Can filter classes with regex', function () {
     expect(iterator_to_array($finder))
         ->toHaveCount(1)
         ->toHaveKey(MyClass::class)
+        ->toContain(MyClass::class)
         ->not()->toHaveKey(AnotherClass::class);
 });
 
@@ -125,25 +127,39 @@ it('Returns instances of the class', function () {
         ->toContainOnlyInstancesOf(MyClass::class);
 });
 
-it('Can return an array of classes', function () {
+it('Returns ReflectionClasses for the class', function () {
     $finder = ClassFinder::create()
         ->in(__DIR__.'/fixtures', NAMESPACE_PREFIX)
-        ->toArray();
-    expect($finder)
+        ->match(MyClass::class)
+        ->reflect();
+
+    expect(iterator_to_array($finder))
+        ->toHaveCount(1)
+        ->toHaveKey(MyClass::class)
+        ->toContainOnlyInstancesOf(ReflectionClass::class);
+});
+
+it('Can return an array of classes', function () {
+    $results = ClassFinder::create()
+        ->in(__DIR__.'/fixtures', NAMESPACE_PREFIX)
+        ->toArray(true);
+    expect($results)
         ->toBeArray()
         ->toHaveKey(MyClass::class);
 });
 
 it('Can do actions on each class', function () {
+    $foo = null;
     ClassFinder::create()
         ->in(__DIR__.'/fixtures', NAMESPACE_PREFIX)
         ->withInterfaces(MyInterface::class)
         ->instances()
-        ->do(function ($object, $class) {
+        ->do(function ($object, $class) use (&$foo) {
             expect($object)
                 ->toBeInstanceOf($class);
             $object->foo();
-            expect($object->fooCalled())
-                ->toBeTrue();
+            $foo = is_null($foo) ? $object->fooCalled() : $foo && $object->fooCalled();
         });
+    expect($foo)
+        ->toBeTrue();
 });
