@@ -115,6 +115,17 @@ it('Can filter interfaces', function () {
         ->toHaveKey(ClassWithInterface::class);
 });
 
+it('Can filter using a callback', function () {
+    $finder = ClassFinder::create()
+        ->in(__DIR__.'/fixtures', NAMESPACE_PREFIX)
+        ->filter(function (ReflectionClass $class, string $class_name) {
+            return $class_name === AnotherClass::class;
+        });
+    expect(iterator_to_array($finder))
+        ->toHaveCount(1)
+        ->toHaveKey(AnotherClass::class);
+});
+
 it('Returns instances of the class', function () {
     $finder = ClassFinder::create()
         ->in(__DIR__.'/fixtures', NAMESPACE_PREFIX)

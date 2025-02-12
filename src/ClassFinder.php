@@ -2,6 +2,7 @@
 
 namespace DeJoDev\Fabriek;
 
+use CallbackFilterIterator;
 use Closure;
 use Countable;
 use DeJoDev\Fabriek\Iterators\FilterClassesIterator;
@@ -31,6 +32,8 @@ final class ClassFinder implements Countable, IteratorAggregate
     private array $withTraits = [];
 
     private array $withInterfaces = [];
+
+    private ?Closure $filterCallback = null;
 
     private ?Closure $instances = null;
 
@@ -153,6 +156,21 @@ final class ClassFinder implements Countable, IteratorAggregate
     }
 
     /**
+     * Filter the search results using a callback function.
+     *
+     * @param  callable  $callback  A callable with two parameters:
+     *                              - $reflectionClass -> A ReflectionClass object for the class
+     *                              - $className -> string with the fully qualified class name
+     *                              function(ReflectionClass $reflectionClass, string $className)
+     */
+    public function filter(callable $callback): ClassFinder
+    {
+        $this->filterCallback = $callback(...);
+
+        return $this;
+    }
+
+    /**
      * Return instances instead of classnames as values
      */
     public function instances(?callable $factoryMethod = null): ClassFinder
@@ -195,6 +213,10 @@ final class ClassFinder implements Countable, IteratorAggregate
 
         if ($this->withInterfaces) {
             $iterator = new FilterWithInterfacesIterator($iterator, $this->withInterfaces);
+        }
+
+        if ($this->filterCallback) {
+            $iterator = new CallbackFilterIterator($iterator, $this->filterCallback);
         }
 
         if ($this->instances) {
