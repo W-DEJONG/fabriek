@@ -188,8 +188,8 @@ it('Throws an exception when no directories are specified', function () {
 
 it('Can search multiple directories', function () {
     $finder = ClassFinder::create()
-        ->in(__DIR__.'/fixtures/SubFolder', NAMESPACE_PREFIX . '\\SubFolder')
-        ->in(__DIR__.'/fixtures/AnotherSubFolder', NAMESPACE_PREFIX . '\\AnotherSubFolder');
+        ->in(__DIR__.'/fixtures/SubFolder', NAMESPACE_PREFIX.'\\SubFolder')
+        ->in(__DIR__.'/fixtures/AnotherSubFolder', NAMESPACE_PREFIX.'\\AnotherSubFolder');
     expect(iterator_to_array($finder))
         ->toHaveCount(3)
         ->toHaveKey(AnotherClass::class)
