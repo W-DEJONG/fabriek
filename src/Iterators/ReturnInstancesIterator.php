@@ -5,9 +5,9 @@ namespace DeJoDev\Fabriek\Iterators;
 use Closure;
 use Iterator;
 
-readonly class ReturnInstancesIterator implements Iterator
+class ReturnInstancesIterator implements Iterator
 {
-    public function __construct(private Iterator $iterator, private Closure $factoryMethod) {}
+    public function __construct(private readonly Iterator $iterator, private readonly Closure $factoryMethod) {}
 
     public function current(): object
     {

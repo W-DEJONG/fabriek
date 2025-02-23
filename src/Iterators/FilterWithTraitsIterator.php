@@ -3,10 +3,11 @@
 namespace DeJoDev\Fabriek\Iterators;
 
 use FilterIterator;
+use Iterator;
 
 class FilterWithTraitsIterator extends FilterIterator
 {
-    public function __construct(\Iterator $iterator, private readonly array $traits)
+    public function __construct(Iterator $iterator, private readonly array $traits)
     {
         parent::__construct($iterator);
     }

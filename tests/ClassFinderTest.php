@@ -8,7 +8,6 @@ use DeJoDev\Fabriek\Fixtures\MyEnum;
 use DeJoDev\Fabriek\Fixtures\MyInterface;
 use DeJoDev\Fabriek\Fixtures\MyTrait;
 use DeJoDev\Fabriek\Fixtures\SubFolder\AnotherClass;
-use Symfony\Component\Finder\Finder;
 
 const NAMESPACE_PREFIX = 'DeJoDev\\Fabriek\\Fixtures';
 
@@ -16,9 +15,7 @@ it('Can instantiate a ClassFinder object', function () {
     $finder = ClassFinder::create();
 
     expect($finder)
-        ->toBeInstanceOf(ClassFinder::class)
-        ->and($finder->getFinder())
-        ->toBeInstanceOf(Finder::class);
+        ->toBeInstanceOf(ClassFinder::class);
 });
 
 it('Can scan a model folder for classes', function () {
@@ -38,6 +35,15 @@ it('Can scan a model folder for classes', function () {
         ->toHaveCount(5)
         ->toHaveKey(MyClass::class)
         ->toHaveKey(MyEnum::class);
+});
+
+it('Can exclude folders from search', function () {
+    $finder = ClassFinder::create()
+        ->in(__DIR__.'/fixtures', NAMESPACE_PREFIX)
+        ->exclude(__DIR__.'/fixtures/SubFolder');
+
+    expect(iterator_to_array($finder))
+        ->toHaveCount(4);
 });
 
 it('Can filter classes with regex', function () {
@@ -174,3 +180,8 @@ it('Can do actions on each class', function () {
     expect($foo)
         ->toBeTrue();
 });
+
+it('Throws an exception when no directories are specified', function () {
+    ClassFinder::create()
+        ->getIterator();
+})->throws(LogicException::class);
