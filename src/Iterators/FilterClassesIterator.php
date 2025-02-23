@@ -2,21 +2,32 @@
 
 namespace DeJoDev\Fabriek\Iterators;
 
+use FilesystemIterator;
+use FilterIterator;
+use RecursiveCallbackFilterIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionEnum;
-use Symfony\Component\Finder\Iterator\MultiplePcreFilterIterator;
-use Symfony\Component\Finder\SplFileInfo;
+use SplFileInfo;
 
-class FilterClassesIterator extends MultiplePcreFilterIterator
+class FilterClassesIterator extends FilterIterator
 {
     public function __construct(
-        \Iterator $iterator,
-        private readonly array $directories,
-        array $matchPatterns,
-        array $noMatchPatterns,
+        private readonly string $directory,
+        private readonly string $namespace,
+        private readonly array $exclude,
+        private readonly array $matchPatterns,
+        private readonly array $noMatchPatterns,
         private readonly bool $withEnums,
     ) {
-        parent::__construct($iterator, $matchPatterns, $noMatchPatterns);
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveCallbackFilterIterator(
+                new RecursiveDirectoryIterator($this->directory, flags: FilesystemIterator::SKIP_DOTS),
+                fn (SplFileInfo $current, $key, $iterator) => $this->acceptDirectory($current->getPathname())
+            )
+        );
+        parent::__construct($iterator);
     }
 
     /**
@@ -36,22 +47,54 @@ class FilterClassesIterator extends MultiplePcreFilterIterator
 
     public function accept(): bool
     {
-        $className = $this->getClassName(parent::current());
+        $file = parent::current();
+
+        if ($file->isDir() || ! preg_match('/^.+\.php$/i', $file->getFilename())) {
+            return false;
+        }
+
+        $className = $this->getClassName($file);
 
         return class_exists($className) &&
             ($this->withEnums || ! enum_exists($className)) &&
-            $this->isAccepted($className);
+            $this->matches($className);
     }
 
-    protected function toRegex(string $str): string
+    private function acceptDirectory(string $path): bool
     {
-        return $this->isRegex($str) ? $str : '/'.preg_quote($str, '/').'/i';
+        return ! in_array($path, $this->exclude);
+    }
+
+    private function toRegex(string $str): string
+    {
+        return str_starts_with($str, '/') ? $str : '/'.preg_quote($str, '/').'/i';
+    }
+
+    private function matches(string $string): bool
+    {
+        foreach ($this->noMatchPatterns as $pattern) {
+            if (preg_match($this->toRegex($pattern), $string)) {
+                return false;
+            }
+        }
+
+        if ($this->matchPatterns) {
+            foreach ($this->matchPatterns as $pattern) {
+                if (preg_match($this->toRegex($pattern), $string)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     private function getClassName(SplFileInfo $file): string
     {
-        $dir = substr($file->getPathName(), 0, strlen($file->getPathName()) - strlen($file->getRelativePathname()));
+        $dir = substr($file->getPathname(), -(strlen($file->getPathName()) - strlen($this->directory)));
 
-        return $this->directories[$dir].str_replace(['/', '.php'], ['\\', ''], $file->getRelativePathname());
+        return $this->namespace.str_replace(['/', '.php'], ['\\', ''], $dir);
     }
 }

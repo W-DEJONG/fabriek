@@ -4,9 +4,9 @@ namespace DeJoDev\Fabriek\Iterators;
 
 use Iterator;
 
-readonly class ReturnClassNamesIterator implements Iterator
+class ReturnClassNamesIterator implements Iterator
 {
-    public function __construct(private Iterator $iterator) {}
+    public function __construct(private readonly Iterator $iterator) {}
 
     public function current(): string
     {

@@ -2,6 +2,7 @@
 
 namespace DeJoDev\Fabriek;
 
+use AppendIterator;
 use CallbackFilterIterator;
 use Closure;
 use Countable;
@@ -13,13 +14,13 @@ use DeJoDev\Fabriek\Iterators\ReturnClassNamesIterator;
 use DeJoDev\Fabriek\Iterators\ReturnInstancesIterator;
 use Iterator;
 use IteratorAggregate;
-use Symfony\Component\Finder\Finder;
+use LogicException;
 
 final class ClassFinder implements Countable, IteratorAggregate
 {
-    private Finder $finder;
-
     private array $directories = [];
+
+    private array $exclude = [];
 
     private array $matchPatterns = [];
 
@@ -39,29 +40,12 @@ final class ClassFinder implements Countable, IteratorAggregate
 
     private bool $reflect = false;
 
-    public function __construct()
-    {
-        $this->finder = (new Finder)->files()->name('*.php');
-    }
-
     /**
      * Create a new ClassFinder instance
      */
     public static function create(): ClassFinder
     {
         return new ClassFinder;
-    }
-
-    /**
-     * This method returns the underlying Symfony Finder object.
-     *
-     * Warning! Using the finder directly can cause unforeseen results so use with caution.
-     *
-     * @see https://symfony.com/doc/current/components/finder.html
-     */
-    public function getFinder(): Finder
-    {
-        return $this->finder;
     }
 
     /**
@@ -76,7 +60,14 @@ final class ClassFinder implements Countable, IteratorAggregate
         $directory = str_ends_with($directory, '/') ? $directory : $directory.'/';
         $namespace = str_ends_with($namespace, '\\') ? $namespace : $namespace.'\\';
         $this->directories[$directory] = $namespace;
-        $this->finder->in($directory);
+
+        return $this;
+    }
+
+    public function exclude(string $directory): ClassFinder
+    {
+        $directory = str_ends_with($directory, '/') ? $directory : $directory.'/';
+        $this->exclude[] = $directory;
 
         return $this;
     }
@@ -84,7 +75,7 @@ final class ClassFinder implements Countable, IteratorAggregate
     /**
      * Adds one or more search patterns for filtering based on classname and namespace.
      * At least one pattern must match for a class to be accepted.
-     * Given pattern may be a regular expressions otherwise partial string matching is used.
+     * Patterns starting with `/` are considered regular expressions, otherwise partial string matching is used.
      *
      * @param  array|string  $patterns  One or more patterns to be matched.
      */
@@ -98,7 +89,7 @@ final class ClassFinder implements Countable, IteratorAggregate
     /**
      * Adds one or more search patterns for filtering based on classname and namespace.
      * No given patterns may match for a class to be accepted.
-     * Given pattern may be a regular expressions otherwise partial string matching is used.
+     * Patterns starting with `/` are considered regular expressions, otherwise partial string matching is used.
      *
      * @return $this
      */
@@ -195,13 +186,21 @@ final class ClassFinder implements Countable, IteratorAggregate
      */
     public function getIterator(): Iterator
     {
-        $iterator = new FilterClassesIterator(
-            $this->finder->getIterator(),
-            $this->directories,
-            $this->matchPatterns,
-            $this->noMatchPatterns,
-            $this->withEnums,
-        );
+        if (empty($this->directories)) {
+            throw new LogicException('No directories have been specified.');
+        }
+
+        $iterator = new AppendIterator;
+        foreach ($this->directories as $directory => $namespace) {
+            $iterator->append(new FilterClassesIterator(
+                $directory,
+                $namespace,
+                $this->exclude,
+                $this->matchPatterns,
+                $this->noMatchPatterns,
+                $this->withEnums,
+            ));
+        }
 
         if ($this->withParents) {
             $iterator = new FilterWithParentsIterator($iterator, $this->withParents);

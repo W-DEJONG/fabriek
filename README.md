@@ -1,12 +1,12 @@
 # Fabriek
 Experimental Package for auto discovering classes and building factories for them.
+It provides a fluent interface for searching, filtering and instantiating classes.
 
-This package uses the [Symfony Finder](https://symfony.com/doc/current/components/finder.html) package to locate 
-classes and provides a fluent interface for selecting and filtering.
+This package was inspired by the [Symfony Finder](https://symfony.com/doc/current/components/finder.html) package 
+but the dependency was too heavy for my use case and removed.
 
 Usage
 ```php
-
 <?php
 
 use DeJoDev\Fabriek\ClassFinder;
@@ -21,7 +21,6 @@ $finder = ClassFinder::create()
 foreach ($finder as $job) {
     $job->handle();
 }
-
 ```
 
-2025 Wouter de Jong
+(c) 2025 Wouter de Jong
